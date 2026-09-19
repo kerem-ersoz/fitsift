@@ -68,6 +68,7 @@ def test_models_copilot(client):
     assert body["backend"] == "copilot"
     assert body["models"][0] == "auto"
     assert "gpt-5.6-sol" in body["models"]
+    assert "gpt-5.6-sol-fast" in body["models"]
     assert "claude-opus-5" in body["models"]
     assert body["allow_custom"] is True
     # Effort levels are exposed (from the CLI, or the known fallback when it's absent).

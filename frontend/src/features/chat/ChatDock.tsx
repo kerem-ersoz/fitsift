@@ -35,7 +35,12 @@ const selectClass =
 
 const MODEL_LABELS: Record<string, string> = {
   'gpt-5.6-sol': 'GPT-5.6 Sol · Long context',
+  'gpt-5.6-sol-fast': 'GPT-5.6 Sol Fast · Long context · xhigh default',
   'claude-opus-5': 'Claude Opus 5 · Long context',
+}
+
+const MODEL_DEFAULT_EFFORTS: Record<string, string> = {
+  'gpt-5.6-sol-fast': 'xhigh',
 }
 
 function backendOptions(copilot: boolean) {
@@ -458,7 +463,12 @@ function ChatView({
           </select>
           <select
             value={chat.modelSel}
-            onChange={(e) => chat.setModelSel(e.target.value)}
+            onChange={(e) => {
+              const model = e.target.value
+              chat.setModelSel(model)
+              const defaultEffort = MODEL_DEFAULT_EFFORTS[model]
+              if (defaultEffort) chat.setEffort(defaultEffort)
+            }}
             disabled={chat.running || !modelInfo}
             aria-label="Model"
             className={selectClass}

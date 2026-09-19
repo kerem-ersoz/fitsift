@@ -494,6 +494,23 @@ the other's web service on port 8000. Tune it with `FITSIFT_PORT`, `POLL_INTERVA
 with `fit2json fetch garmin --days 1 --token-dir ~/.fit2json/garmintokens` (enter MFA if
 prompted), after which the poller resumes automatically.
 
+On Windows, use the native launcher from PowerShell:
+
+```powershell
+.\FitSift.cmd              # start the services and open the UI
+.\FitSift.cmd status
+.\FitSift.cmd stop
+.\FitSift.cmd install      # add FitSift to the Start menu
+```
+
+After installing the shortcut, search for **FitSift** in the Start menu, right-click it,
+and select **Pin to taskbar**. The shortcut runs the current Windows checkout through the
+existing Ubuntu/WSL Python environment, preserving its authenticated Copilot CLI, then opens
+http://localhost:8000 when the API is ready. Launching it again stops the existing web,
+poller, and analyzer processes before starting a fresh single instance. Set
+`FITSIFT_WSL_DISTRO`, `FITSIFT_WSL_REPO`, or `FITSIFT_WSL_FIT2JSON` to override the
+default WSL locations.
+
 Interactive analyses are owned by the web server once accepted. Switching apps, locking
 the device, navigating away, or losing the browser connection only detaches the live
 view; reconnecting replays missed output without starting a second model call. Completed

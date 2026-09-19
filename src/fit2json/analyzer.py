@@ -155,7 +155,7 @@ LOCAL_BACKENDS = {
 }
 
 # FitSift exposes these as explicit long-context presets in the model selector.
-COPILOT_LONG_CONTEXT_MODELS = ("gpt-5.6-sol", "claude-opus-5")
+COPILOT_LONG_CONTEXT_MODELS = ("gpt-5.6-sol", "gpt-5.6-sol-fast", "claude-opus-5")
 
 
 def copilot_available() -> bool:
