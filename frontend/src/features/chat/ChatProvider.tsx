@@ -19,6 +19,7 @@ import {
   type ChatSummary,
   type MapStep,
 } from '../../lib/api'
+import { DEFAULT_COPILOT_MODEL, MODEL_DEFAULT_EFFORTS } from './modelPresets'
 
 /** A single conversation turn as held in memory (map steps are live-only). */
 export interface Msg {
@@ -116,7 +117,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [activityIds, setActivityIdsState] = useState<string[]>([])
 
   const [backend, setBackend] = useState('')
-  const [modelSel, setModelSel] = useState('auto')
+  // '' until the model picker resolves it to the backend's default.
+  const [modelSel, setModelSel] = useState('')
   const [customModel, setCustomModel] = useState('')
   const [effort, setEffort] = useState('')
   const [workoutPrompt, setWorkoutPrompt] = useState<string | null>(null)
@@ -562,9 +564,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setMessages([])
     setError(null)
     rememberActive(null)
-    // Attachments and settings intentionally carry over, so it's easy to ask a fresh
-    // question about the same workouts.
-  }, [])
+    // Attachments and other settings carry over, so it's easy to ask a fresh question about
+    // the same workouts. A Copilot model pick resets to the default preset.
+    if (backend === 'copilot') {
+      setModelSel(DEFAULT_COPILOT_MODEL)
+      setEffort(MODEL_DEFAULT_EFFORTS[DEFAULT_COPILOT_MODEL] ?? '')
+    }
+  }, [backend])
 
   const loadChat = useCallback(
     async (id: string, openPanel: boolean, forgetOnFailure = true) => {

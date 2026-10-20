@@ -29,19 +29,10 @@ import { Sheet } from '../../components/ui/Sheet'
 import { ThinkingDisclosure } from '../../components/ui/ThinkingDisclosure'
 import { InfographicView } from '../analyze/InfographicView'
 import { CUSTOM_MODEL, useChat, type Msg } from './ChatProvider'
+import { DEFAULT_COPILOT_MODEL, MODEL_DEFAULT_EFFORTS, MODEL_LABELS } from './modelPresets'
 
 const selectClass =
   'h-8 max-w-[10rem] rounded-lg border border-divider bg-surface px-2 text-base text-strong focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 sm:text-xs'
-
-const MODEL_LABELS: Record<string, string> = {
-  'gpt-5.6-sol': 'GPT-5.6 Sol · Long context',
-  'gpt-5.6-sol-fast': 'GPT-5.6 Sol Fast · Long context · xhigh default',
-  'claude-opus-5': 'Claude Opus 5 · Long context',
-}
-
-const MODEL_DEFAULT_EFFORTS: Record<string, string> = {
-  'gpt-5.6-sol-fast': 'xhigh',
-}
 
 function backendOptions(copilot: boolean) {
   const opts = [
@@ -293,12 +284,17 @@ function ChatView({
   const [titleDraft, setTitleDraft] = useState('')
   const transcriptRef = useRef<HTMLDivElement>(null)
 
-  // Keep the model selection valid for the chosen backend.
+  // Keep the model selection valid for the chosen backend. An unset or unavailable model falls
+  // back to the default Copilot preset when offered, else the first listed model.
   useEffect(() => {
     if (!modelInfo) return
     if (chat.modelSel === CUSTOM_MODEL) return
     if (modelInfo.models.includes(chat.modelSel)) return
-    chat.setModelSel(modelInfo.models[0] ?? (modelInfo.allow_custom ? CUSTOM_MODEL : ''))
+    const fallback = modelInfo.models.includes(DEFAULT_COPILOT_MODEL)
+      ? DEFAULT_COPILOT_MODEL
+      : (modelInfo.models[0] ?? (modelInfo.allow_custom ? CUSTOM_MODEL : ''))
+    chat.setModelSel(fallback)
+    chat.setEffort(MODEL_DEFAULT_EFFORTS[fallback] ?? '')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modelInfo])
 

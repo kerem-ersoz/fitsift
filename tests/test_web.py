@@ -67,6 +67,7 @@ def test_models_copilot(client):
     body = r.json()
     assert body["backend"] == "copilot"
     assert body["models"][0] == "auto"
+    assert "claude-opus-5.5" in body["models"]
     assert "gpt-5.6-sol" in body["models"]
     assert "gpt-5.6-sol-fast" in body["models"]
     assert "claude-opus-5" in body["models"]
