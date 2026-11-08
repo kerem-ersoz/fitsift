@@ -47,17 +47,31 @@ _ensure_bin() {
   fi
   echo "$bin"
 }
+# The SPA build is stale when it's missing or any frontend source changed after it (e.g. a pull).
+_dist_stale() {
+  local index="$REPO_ROOT/frontend/dist/index.html"
+  [ -f "$index" ] || return 0
+  [ -n "$(find "$REPO_ROOT/frontend" \( -name node_modules -o -name dist \) -prune -o \
+            -type f -newer "$index" -print -quit 2>/dev/null)" ]
+}
 _ensure_dist() {
-  [ -f "$REPO_ROOT/frontend/dist/index.html" ] && return 0
+  _dist_stale || return 0
   if ! command -v npm >/dev/null 2>&1; then
+    if [ -f "$REPO_ROOT/frontend/dist/index.html" ]; then
+      echo "  frontend/dist is older than its sources but 'npm' was not found; serving the existing build." >&2
+      return 0
+    fi
     echo "  frontend/dist is missing and 'npm' was not found on PATH." >&2
     echo "  Install Node 18+ and npm, then re-run (or build frontend/dist and copy it in)." >&2
     return 1
   fi
-  echo "  building frontend SPA in $REPO_ROOT/frontend (dist missing) ..."
+  echo "  building frontend SPA in $REPO_ROOT/frontend (dist missing or out of date) ..."
   (
     cd "$REPO_ROOT/frontend" || exit 1
-    if [ ! -d node_modules ]; then echo "  installing frontend deps (npm ci) ..."; npm ci || npm install || exit 1; fi
+    # npm rewrites node_modules/.package-lock.json on every install, so an older one means the lockfile changed.
+    if [ ! -d node_modules ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then
+      echo "  installing frontend deps (npm ci) ..."; npm ci || npm install || exit 1
+    fi
     npm run build
   ) || { echo "  frontend build failed; try manually: (cd \"$REPO_ROOT/frontend\" && npm ci && npm run build)" >&2; return 1; }
 }
