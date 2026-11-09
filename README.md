@@ -487,29 +487,36 @@ picker, run everything as host processes instead:
 ```
 
 `local` is idempotent (per-service PID files + logs under `~/.fit2json`), serves the built
-SPA via `fit2json serve` where Copilot is on `PATH`, and starts the poller and
+SPA via `fit2json serve` where Copilot is on `PATH` (rebuilding `frontend/dist` first when
+it's missing or older than its sources, e.g. after a pull), and starts the poller and
 auto-analyzer alongside it. It won't collide with the container stack: starting one stops
 the other's web service on port 8000. Tune it with `FITSIFT_PORT`, `POLL_INTERVAL`, and the
 `ANALYZE_*` knobs. The Garmin poller needs a valid token cache for this build; seed it once
 with `fit2json fetch garmin --days 1 --token-dir ~/.fit2json/garmintokens` (enter MFA if
 prompted), after which the poller resumes automatically.
 
-On Windows, use the native launcher from PowerShell:
+On Windows, use the launcher from PowerShell in a checkout:
 
 ```powershell
-.\FitSift.cmd              # start the services and open the UI
+.\FitSift.cmd              # run this checkout in WSL and open the UI
 .\FitSift.cmd status
 .\FitSift.cmd stop
-.\FitSift.cmd install      # add FitSift to the Start menu
+.\FitSift.cmd install      # install the FitSift launcher and Start-menu shortcut
 ```
 
-After installing the shortcut, search for **FitSift** in the Start menu, right-click it,
-and select **Pin to taskbar**. The shortcut runs the current Windows checkout through the
-existing Ubuntu/WSL Python environment, preserving its authenticated Copilot CLI, then opens
-http://localhost:8000 when the API is ready. Launching it again stops the existing web,
-poller, and analyzer processes before starting a fresh single instance. Set
-`FITSIFT_WSL_DISTRO`, `FITSIFT_WSL_REPO`, or `FITSIFT_WSL_FIT2JSON` to override the
-default WSL locations.
+`install` copies the launcher to `%LOCALAPPDATA%\FitSift`, so the shortcut keeps working
+after the checkout it came from (such as a Copilot worktree) is deleted; re-run it from any
+checkout to pick up launcher changes. It also re-points an existing FitSift taskbar pin;
+otherwise search for **FitSift** in the Start menu, right-click it, and select **Pin to
+taskbar**.
+
+The shortcut runs the Ubuntu/WSL install at `~/fitsift` with its Python environment and
+authenticated Copilot CLI. Each launch fast-forwards that clone from its upstream branch
+(starting the current version if it can't, e.g. offline or with conflicting local edits),
+stops the existing web, poller, and analyzer processes, rebuilds the SPA if its sources
+changed, starts a fresh single instance, and opens http://localhost:8000 when the API is
+ready. If anything fails, the window stays open with the error. Set `FITSIFT_WSL_DISTRO`,
+`FITSIFT_WSL_REPO`, or `FITSIFT_WSL_FIT2JSON` to override the default WSL locations.
 
 Interactive analyses are owned by the web server once accepted. Switching apps, locking
 the device, navigating away, or losing the browser connection only detaches the live
